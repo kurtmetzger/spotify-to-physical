@@ -1,6 +1,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import FileUpload from './components/FileUpload';
+import AlbumList from './components/AlbumList';
 import { filterPlays, aggregateAlbums, scoreAlbums } from './utils/scoring';
 
 
@@ -28,8 +29,11 @@ function App() {
       <h1>Spotify to Physical</h1>
       {
         //Shows total plays if there is data uploaded
-        spotifyData ? (
-          <h5>Total plays: {spotifyData.length}</h5>
+        spotifyData && scoredAlbums ? (
+          <>
+            <h5>Total plays: {spotifyData.length}</h5>
+            <AlbumList scoredAlbums={scoredAlbums}/>
+          </>
         ) : (
           <FileUpload onDataLoaded={setSpotifyData} />
         )
