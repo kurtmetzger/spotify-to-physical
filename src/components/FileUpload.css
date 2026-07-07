@@ -1,0 +1,20 @@
+:root {
+  --color-background: #1A0033;
+  --color-primary: #008080;
+  --color-text: #FFFAEF;
+  --color-secondary: #FFBD52;
+  --color-accent: #DC1199;
+}
+
+.fileUpload {
+    background-color: var(--color-secondary);
+    display: flex;
+    justify-content: center;
+    margin: 16px;
+    padding: 8px;
+}
+
+.fileUpload *{
+    color: black;
+    width: min-content;
+}

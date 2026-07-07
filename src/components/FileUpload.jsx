@@ -1,3 +1,5 @@
+import './FileUpload.css'
+
 function FileUpload({ onDataLoaded }){
     function handleFileChange(event){
         const file = event.target.files[0];
@@ -10,7 +12,11 @@ function FileUpload({ onDataLoaded }){
     }
 
     return(
-        <input type ="file" accept=".json" onChange={handleFileChange} />
+        <div className="fileUpload">
+            <div>
+                <input type ="file" accept=".json" onChange={handleFileChange} />
+            </div>
+        </div>
     )
 }
 

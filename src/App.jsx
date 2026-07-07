@@ -26,7 +26,9 @@ function App() {
 
   return(
     <>
-      <h1>Spotify to Physical</h1>
+      <div className='header'>
+        <h1>Spotify to Physical</h1>
+      </div>
       {
         //Shows total plays if there is data uploaded
         spotifyData && scoredAlbums ? (

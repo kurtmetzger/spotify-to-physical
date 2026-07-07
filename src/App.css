@@ -1,0 +1,12 @@
+:root {
+  --color-background: #1A0033;
+  --color-primary: #008080;
+  --color-text: #FFFAEF;
+  --color-secondary: #FFBD52;
+  --color-accent: #DC1199;
+}
+
+.header{
+    padding: 8px;
+    background-color: var(--color-primary);
+}

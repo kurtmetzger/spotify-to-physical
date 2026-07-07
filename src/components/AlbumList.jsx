@@ -1,11 +1,11 @@
+import './AlbumList.css'
+import AlbumCard from './AlbumCard';
+
 function AlbumList({ scoredAlbums }){
     return (
-        <div>
+        <div className="albumList">
             {scoredAlbums.map((album, index) => (
-                <div key={album.albumName}>
-                    <h2>{index +1}. {album.albumName}</h2>
-                    <p>{album.artist}</p>
-                </div>
+                <AlbumCard key={album.albumname} album={album} index={index}/>
             ))}
         </div>
     )
