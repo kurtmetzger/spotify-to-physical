@@ -12,8 +12,10 @@ function FileUpload({ onDataLoaded }){
     }
 
     return(
-        <div className="fileUpload">
-            <div>
+        <div className="fileUploadContainer">
+            <div className="fileUpload">
+                {/* -- TODO: replace this directions link with a page of my own. */}
+                <p>To get your results, upload a JSON of your spotify listening history. Not sure how to get this? Follow the instructions <a href='https://explorify.link/instructions'>here</a></p>
                 <input type ="file" accept=".json" onChange={handleFileChange} />
             </div>
         </div>

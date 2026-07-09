@@ -6,15 +6,27 @@
   --color-accent: #DC1199;
 }
 
-.fileUpload {
-    background-color: var(--color-secondary);
+.fileUploadContainer{
     display: flex;
+    justify-content: center;
+}
+
+.fileUpload {
+    display: flex;
+    background-color: var(--color-secondary);
     justify-content: center;
     margin: 16px;
     padding: 8px;
+    width: 100%;
+    max-width: 600px;
+    flex-direction: column;
+}
+
+.fileUpload p, input{
+    width: 100%;
+    color: black;
 }
 
 .fileUpload *{
-    color: black;
     width: min-content;
 }
