@@ -9,10 +9,19 @@
     flex-direction: row;
     border: 4px solid #FFFAEF;
     font-size: larger;
-    min-height: fit-content
 }
 
-.albumInfo{
+.albumArt {
+    align-self: center;
+    width: 100px;
+    height: 100px;
+    min-width: 100px;
+    min-height: 100px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.albumInfo {
     display: flex;
     flex-direction: row;
     width: auto;
@@ -21,9 +30,10 @@
 }
 
 .albumDetails {
-    flex: 1;
+    flex-grow: 1;
+    flex-shrink: 3;
     min-width: 0;
-    overflow: hidden;
+    height: auto;
 }
 
 .albumInfo > *{
@@ -57,7 +67,7 @@
 }
 
 .albumTitleWrapper {
-    overflow: hidden;
+    overflow-x: hidden;
     width: 100%;
     margin: 0;
 }
@@ -65,11 +75,12 @@
 .albumTitleWrapper .albumTitle {
     margin: 0;
     padding: 0;
+    overflow-y: visible;
 }
 
 .albumTitle{
     white-space: nowrap;
-    overflow: hidden;
+    overflow-x: hidden;
     text-overflow: ellipsis;
     width: 100%;
     margin: 0px;
