@@ -9,4 +9,5 @@
 .header{
     padding: 8px;
     background-color: var(--color-primary);
+    margin-bottom: 16px;
 }

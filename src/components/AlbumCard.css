@@ -1,20 +1,32 @@
 .albumCard {
+    color: #FFFAEF;
     display: flex;
     background-color: #1A0033;
-    width: 800px;
+    width: 100%;
+    max-width: 800px;
     margin: 8px;
     padding: 8px;
     flex-direction: row;
     border: 4px solid #FFFAEF;
+    font-size: larger;
+    min-height: fit-content
 }
 
 .albumInfo{
     display: flex;
     flex-direction: row;
-    width: 80%;
+    width: auto;
+    flex-grow: 1;
+    min-width: 0;
 }
 
-.albumInfo *{
+.albumDetails {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.albumInfo > *{
     margin: 4px;
 }
 
@@ -24,11 +36,55 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: flex-end;
-    
+    min-width: fit-content;
 }
 
 .purchaseButtons button{
     background-color: #FFBD52;
     color: black;
-    width: 80px;
+    width: 120px;
+    border-radius: 0px;
+    padding: 4px;
+    border: none;
+}
+
+.purchaseButtons button:hover{
+    background-color: #FF6741;
+}
+
+.purchaseButtons button:active{
+    background-color: #DC1199;
+}
+
+.albumTitleWrapper {
+    overflow: hidden;
+    width: 100%;
+    margin: 0;
+}
+
+.albumTitleWrapper .albumTitle {
+    margin: 0;
+    padding: 0;
+}
+
+.albumTitle{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    margin: 0px;
+}
+
+.albumCard:hover .albumTitle {
+    animation: marquee 3s linear infinite;
+    text-overflow: clip;
+    white-space: nowrap;
+    display: inline-block;
+    width: auto;
+    vertical-align: top;
+}
+
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100px); }
 }

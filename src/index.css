@@ -24,6 +24,6 @@ body{
   font-family: 'Space Mono', monospace;
 }
 
-input{
+input, button{
   font-family: 'Space Mono', monospace;
 }

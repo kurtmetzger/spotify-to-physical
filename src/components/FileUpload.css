@@ -15,7 +15,7 @@
     display: flex;
     background-color: var(--color-secondary);
     justify-content: center;
-    margin: 16px;
+    margin: 8px;
     padding: 8px;
     width: 100%;
     max-width: 600px;

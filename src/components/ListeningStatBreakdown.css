@@ -1,0 +1,13 @@
+.listeningStatBreakdownContainer{
+    display: flex;
+    justify-content: center;
+}
+
+.listeningStatBreakdown{
+    color: black;
+    background-color: #FFBD52;
+    margin: 8px;
+    width: 100%;
+    max-width: 800px;
+    padding: 8px;
+}
