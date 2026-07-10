@@ -4,12 +4,17 @@ import FileUpload from './components/FileUpload';
 import AlbumList from './components/AlbumList';
 import ListeningStatBreakdown from './components/ListeningStatBreakdown';
 import { filterPlays, aggregateAlbums, scoreAlbums } from './utils/scoring';
+import {getAlbumLinks, sleep} from './utils/musicbrainz';
 
 
 function App() {
   const [spotifyData, setSpotifyData] = useState(null);
 
   const [scoredAlbums, setScoredAlbums] = useState(null);
+
+  const [enrichedAlbums, setEnrichedAlbums] = useState(null);
+
+  const [isLoading, setIsLoading] = useState(null);
 
   useEffect(() => {
     //pass if there isn't any spotify data yet
@@ -25,6 +30,41 @@ function App() {
     console.log(scoredAlbums);
   }, [scoredAlbums]);
 
+  useEffect(() => {
+    if (!scoredAlbums) return;
+
+    async function enrichAlbums() {
+      setIsLoading(true);
+      const top20 = scoredAlbums.slice(0, 20);
+
+      for (const topAlbum of top20){
+        let result = await getAlbumLinks(topAlbum.artist, topAlbum.albumName);
+        if (result){
+            //console.log('result.trackCount:', result.trackCount);
+            //console.log('full result:', result);
+            topAlbum.totalTracks = result.trackCount
+            //console.log('topAlbum.totalTracks after assignment:', topAlbum.totalTracks);
+            //console.log(result);
+            topAlbum.releaseType = result.releaseType;
+            topAlbum.links = result.links;
+            topAlbum.totalTracks = result.trackCount;
+            topAlbum.score = (topAlbum.engagedTracks / result.trackCount) * topAlbum.playAverage;
+        } else{
+            console.log('No link found for: ', topAlbum.artist, topAlbum.albumName);
+        }
+        await sleep(2000);
+      }
+      const albums = top20.filter(album => album.releaseType === 'Album');
+
+      //Resort with track counts
+      top20.sort((a, b) => b.score - a.score);
+      setEnrichedAlbums(albums);
+      setIsLoading(false);
+    }
+
+    enrichAlbums();
+  }, [scoredAlbums]);
+
   return(
     <>
       <div className='header'>
@@ -32,11 +72,13 @@ function App() {
       </div>
       {
         //Shows total plays if there is data uploaded
-        spotifyData && scoredAlbums ? (
+        spotifyData && enrichedAlbums ? (
           <>
             <ListeningStatBreakdown spotifyData={spotifyData}/>
-            <AlbumList scoredAlbums={scoredAlbums}/>
+            <AlbumList scoredAlbums={enrichedAlbums}/>
           </>
+        ) : spotifyData && isLoading ? (
+          <p>Finding and scoring albums... this takes about 40 seconds</p>
         ) : (
           <FileUpload onDataLoaded={setSpotifyData} />
         )

@@ -16,9 +16,15 @@ function AlbumCard({ album, index }){
                 </div>
             </div>
             <div className="purchaseButtons">
-                <button type="button" disabled>
-                    Bandcamp
-                </button>
+                {
+                    album.links.bandcamp ? (
+                        <a type="button" href={album.links.bandcamp} target="_blank">
+                            Bandcamp
+                        </a>
+                    ) : (
+                    <></>
+                    )
+                }
                 <button type="button" disabled>
                     Official Site
                 </button>
