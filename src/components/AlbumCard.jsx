@@ -17,20 +17,26 @@ function AlbumCard({ album, index }){
             </div>
             <div className="purchaseButtons">
                 {
-                    album.links.bandcamp ? (
-                        <a type="button" href={album.links.bandcamp} target="_blank">
+                    album.links?.bandcamp && (
+                        <button type="button" onClick={() => window.open(album.links.bandcamp, '_blank', 'noreferrer')}>
                             Bandcamp
-                        </a>
-                    ) : (
-                    <></>
+                        </button>
                     )
                 }
-                <button type="button" disabled>
-                    Official Site
-                </button>
-                <button type="button" disabled>
-                    Discogs
-                </button>
+                {
+                    album.links?.officialSite && (
+                        <button type="button" onClick={() => window.open(album.links.official, '_blank', 'noreferrer')}>
+                            Official Site
+                        </button>
+                    )
+                }
+                {
+                    album.links?.discogs && (
+                        <button type="button" onClick={() => window.open(album.links.discogs, '_blank', 'noreferrer')}>
+                            Discogs
+                        </button>
+                    )
+                }
             </div>
         </div>
     )
