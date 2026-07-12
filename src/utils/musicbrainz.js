@@ -9,11 +9,23 @@ export async function getAlbumLinks(artist, album) {
 
         //Handles issuees with faulty data
         if (!data.releases || data.releases.length === 0) {
+            
             return { trackCount: null, releaseType: null, links: { bandcamp: null, official: null, discogs: null }} 
         };
+
+        const physicalReleases = data.releases.filter(release => 
+            release.media?.[0]?.format === 'Vinyl' || 
+            release.media?.[0]?.format === 'CD'
+        );
+        const targetPhysical = physicalReleases.at(-1).id || data.releases[0].id;
+        const lastLookupURL = `https://musicbrainz.org/ws/2/release/${targetPhysical}?inc=url-rels&fmt=json`;
+        const lastResponse = await fetch(lastLookupURL);
+        const lastData = await lastResponse.json();
+        console.log('Last release relations:', lastData.relations?.map(r => ({ type: r.type, url: r.url?.resource })));
         //console.log(data);
         //console.log(data.releases[0]['release-group']);
         //TODO: Look into ensuring same release as on spotify (double check track number, iterate for a release on offficial store)
+        //TODO: If first entry doesn't have bandcamp, look for digital release.
         const MBID = data.releases[0].id
         const lookupURL = `https://musicbrainz.org/ws/2/release/${MBID}?inc=url-rels&fmt=json`;
 
@@ -26,6 +38,10 @@ export async function getAlbumLinks(artist, album) {
         if (!linkData.relations) {
             return { trackCount: data.releases[0]['track-count'], releaseType: data.releases[0]['release-group']['primary-type'], links: { bandcamp: null, official: null, discogs: null } };
         }
+
+        //console.log(`Relations for ${artist} - ${album}:`, linkData.relations);
+        //console.log('artist MBID:', data.releases[0]['artist-credit'][0].artist.id);
+        //linkData.relations.forEach(rel => console.log(rel.type, rel.url?.resource));
 
         //linkData.relations.forEach(rel => console.log(rel.type, rel.url));
 
