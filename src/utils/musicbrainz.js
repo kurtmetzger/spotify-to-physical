@@ -1,74 +1,207 @@
+import { cache } from "react";
+import { getCachedAlbum, setCachedAlbum } from "./cache";
+
 export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-export async function getAlbumLinks(artist, album) {
+async function searchRelease(artist, album){
     const url = `https://musicbrainz.org/ws/2/release/?query=artist:"${artist}" AND release:"${album}"&fmt=json`;
+
     try{
         const response = await fetch(url);
 
         const data = await response.json();
 
-        //Handles issuees with faulty data
         if (!data.releases || data.releases.length === 0) {
-            
-            return { trackCount: null, releaseType: null, links: { bandcamp: null, official: null, discogs: null }} 
-        };
-
-        const physicalReleases = data.releases.filter(release => 
-            release.media?.[0]?.format === 'Vinyl' || 
-            release.media?.[0]?.format === 'CD'
-        );
-        const targetPhysical = physicalReleases.at(-1).id || data.releases[0].id;
-        const lastLookupURL = `https://musicbrainz.org/ws/2/release/${targetPhysical}?inc=url-rels&fmt=json`;
-        const lastResponse = await fetch(lastLookupURL);
-        const lastData = await lastResponse.json();
-        console.log('Last release relations:', lastData.relations?.map(r => ({ type: r.type, url: r.url?.resource })));
-        //console.log(data);
-        //console.log(data.releases[0]['release-group']);
-        //TODO: Look into ensuring same release as on spotify (double check track number, iterate for a release on offficial store)
-        //TODO: If first entry doesn't have bandcamp, look for digital release.
-        const MBID = data.releases[0].id
-        const lookupURL = `https://musicbrainz.org/ws/2/release/${MBID}?inc=url-rels&fmt=json`;
-
-        const response2 = await fetch(lookupURL);
-
-
-        const linkData = await response2.json();
-        //console.log(linkData);
-        //console.log(Object.keys(linkData));
-        if (!linkData.relations) {
-            return { trackCount: data.releases[0]['track-count'], releaseType: data.releases[0]['release-group']['primary-type'], links: { bandcamp: null, official: null, discogs: null } };
+            return null;
         }
 
-        //console.log(`Relations for ${artist} - ${album}:`, linkData.relations);
-        //console.log('artist MBID:', data.releases[0]['artist-credit'][0].artist.id);
-        //linkData.relations.forEach(rel => console.log(rel.type, rel.url?.resource));
+        return { 
+            releases: data.releases, 
+            releaseGroupMBID: data.releases[0]['release-group'].id, 
+            trackCount: data.releases[0]['track-count'], 
+            releaseType: data.releases[0]['release-group']['primary-type'] 
+        };
+    } catch (err){
+        console.log('Error:', err);
+    }
+}
+async function getReleaseGroupData(releaseGroupMBID){
+    const releaseGroupEndpoint = `https://musicbrainz.org/ws/2/release-group/${releaseGroupMBID}?inc=url-rels&fmt=json`
+    const coverArt = `https://coverartarchive.org/release-group/${releaseGroupMBID}/front`;
+    
+    try{
+        const releaseGroupResponse = await fetch(releaseGroupEndpoint);
+        const releaseGroupData = await releaseGroupResponse.json();
 
-        //linkData.relations.forEach(rel => console.log(rel.type, rel.url));
-
-        //Checks if bancamp, an official website, or discog link exists
-        const bandcamp = linkData.relations.find(rel => rel.url.resource.includes('bandcamp'));
-        //If bancamp exists, use that as url. Otherwise, null
-        const bandcampURL = bandcamp ? bandcamp.url.resource : null;
-
-        const officialSite = linkData.relations.find(rel => rel.type === 'official homepage');
-        //If official site exists, use that as url. Otherwise, null
+        if (!releaseGroupData.relations){
+            return {discogs: null, coverArt, artistHomepage: null}
+        }
+        
+        const officialSite = releaseGroupData.relations.find(rel => rel.type === 'official homepage');
         const officialSiteURL = officialSite ? officialSite.url.resource : null;
 
-        const discogs = linkData.relations.find(rel => rel.type.includes('discogs'));
+        const discogs = releaseGroupData.relations.find(rel => rel.type.includes('discogs'));
         //If discogs exists, use that as url. Otherwise, null
         const discogsURL = discogs ? discogs.url.resource : null;
 
-        const links = {
-            bandcamp: bandcampURL,
-            official: officialSiteURL,
-            discogs: discogsURL
+        return { 
+            discogs: discogsURL, 
+            coverArt: coverArt,
+            artistHomepage: officialSiteURL
         };
 
-        return {
-            trackCount: data.releases[0]['track-count'],
-            releaseType: data.releases[0]['release-group']['primary-type'],
-            links
+    } catch (err){
+        console.log('Error: ', err);
+    }
+}
+async function getDigitalReleaseData(releases, visitedReleases){
+    const digitalReleases = releases.filter(release => 
+        release.media?.[0]?.format === 'Digital Media'
+    );
+
+    //Returns most recent releases first
+    digitalReleases.sort((a, b) => {
+        if (!a.date) return 1;  // push missing dates to bottom
+        if (!b.date) return -1;
+        return new Date(b.date) - new Date(a.date); // most recent first
+    });
+
+    //Finds first item in digitalReleases not in visitedReleases
+    const visitedSet = new Set(visitedReleases);
+    const nextRelease = digitalReleases.find(release=> !visitedSet.has(release.id));
+    if (!nextRelease){
+        return {bandcamp: 'NONE', visitedMBID: null}
+    }
+
+    try{
+        const lookupURL = `https://musicbrainz.org/ws/2/release/${nextRelease.id}?inc=url-rels&fmt=json`;
+        const response = await fetch(lookupURL);
+        const releaseData = await response.json();
+
+        if (!releaseData.relations) {
+            return { bandcamp: null, visitedMBID: nextRelease.id };
         }
+
+        const bandcamp = releaseData.relations.find(rel => rel.url.resource.includes('bandcamp'));
+        //If bancamp exists, use that as url. Otherwise, null
+        const bandcampURL = bandcamp ? bandcamp.url.resource : null;
+
+        return {bandcamp: bandcampURL, visitedMBID: nextRelease.id};
+    } catch (err) {
+        console.log('Error: ', err);
+    }    
+}
+async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage){
+    const physicalReleases = releases.filter(release => 
+        release.media?.[0]?.format === 'Vinyl' || 
+        release.media?.[0]?.format === 'CD'
+    );
+
+    const americanReleases = physicalReleases.filter(release => 
+        release.country === 'US'
+    );
+
+    //Returns most recent releases first
+    americanReleases.sort((a, b) => {
+        if (!a.date) return 1;  // push missing dates to bottom
+        if (!b.date) return -1;
+        return new Date(b.date) - new Date(a.date); // most recent first
+    });
+
+    //Finds first item in physicalReleases not in visitedReleases
+    const visitedSet = new Set(visitedReleases);
+    const nextRelease = americanReleases.find(release=> !visitedSet.has(release.id));
+    if (!nextRelease){
+        return {official: 'NONE', visitedMBID: null}
+    }
+
+    try{
+        const lookupURL = `https://musicbrainz.org/ws/2/release/${nextRelease.id}?inc=url-rels&fmt=json`;
+        const response = await fetch(lookupURL);
+        const releaseData = await response.json();
+
+        if (!releaseData.relations) {
+            return { official: null, visitedMBID: nextRelease.id };
+        }
+
+        const artistHomepageHostname = artistHomepage ? new URL(artistHomepage).hostname : null;
+
+        if (!artistHomepageHostname) {
+            return { official: null, visitedMBID: nextRelease.id };
+        }
+
+        const official = releaseData.relations.find(rel => 
+            rel.type === 'purchase for mail-order' &&
+            rel.url.resource.includes(artistHomepageHostname)); 
+        //If official exists, use that as url. Otherwise, null
+        const officialURL = official ? official.url.resource : null;
+
+        return {official: officialURL, visitedMBID: nextRelease.id};
+    } catch (err) {
+        console.log('Error: ', err);
+    }      
+}
+
+export async function getAlbumLinks(artist, album) {
+
+    function isResolved(link) {
+        return link !== null;
+    }
+
+    function allLinksResolved(links) {
+        return isResolved(links.bandcamp) && 
+                isResolved(links.official) && 
+                isResolved(links.discogs);
+        }
+
+    try{
+        let cached = getCachedAlbum(artist, album);
+
+        if (!cached){
+            const searchResult = await searchRelease(artist, album);
+            if (!searchResult) return null;
+            cached = {
+                trackCount: searchResult.trackCount,
+                releaseType: searchResult.releaseType,
+                releases: searchResult.releases,
+                releaseGroupMBID: searchResult.releaseGroupMBID,
+                coverArt: null,
+                artistHomepage: null,
+                visitedDigitalReleases: [],
+                visitedPhysicalReleases: [],
+                links: {bandcamp: null, official: null, discogs: null}
+            };
+        }
+        if (!allLinksResolved(cached.links)){
+            
+            if (!cached?.links.discogs){
+                const rgData = await getReleaseGroupData(cached.releaseGroupMBID);
+                cached.links.discogs = rgData.discogs;
+                cached.coverArt = rgData.coverArt;
+                cached.artistHomepage = rgData.artistHomepage;
+            }
+
+            if (!cached?.links.bandcamp){
+                const digitalData = await getDigitalReleaseData(cached.releases, cached.visitedDigitalReleases);
+                cached.links.bandcamp = digitalData.bandcamp;
+                if (digitalData.visitedMBID){
+                    cached.visitedDigitalReleases.push(digitalData.visitedMBID);
+                }
+            }
+
+            if (!cached?.links.official){
+                const physicalData = await getPhysicalReleaseData(cached.releases, cached.visitedPhysicalReleases, cached.artistHomepage);
+                cached.links.official = physicalData.official;
+                if (physicalData.visitedMBID){
+                    cached.visitedPhysicalReleases.push(physicalData.visitedMBID);
+                }
+            }
+
+            setCachedAlbum(artist, album, cached);
+        }
+
+
+        return cached;
     } catch (err){
         console.log('Error:', err);
     }
