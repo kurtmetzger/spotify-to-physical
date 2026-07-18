@@ -15,11 +15,14 @@ async function searchRelease(artist, album){
             return null;
         }
 
+        const officialReleases = data.releases.filter(r => r.status !== 'Bootleg');
+        const primaryRelease = officialReleases[0] || data.releases[0];
+
         return { 
             releases: data.releases, 
-            releaseGroupMBID: data.releases[0]['release-group'].id, 
-            trackCount: data.releases[0]['track-count'], 
-            releaseType: data.releases[0]['release-group']['primary-type'] 
+            releaseGroupMBID: primaryRelease['release-group'].id, 
+            trackCount: primaryRelease['track-count'], 
+            releaseType: primaryRelease['release-group']['primary-type'] 
         };
     } catch (err){
         console.log('Error:', err);
@@ -43,6 +46,8 @@ async function getReleaseGroupData(releaseGroupMBID){
         const discogs = releaseGroupData.relations.find(rel => rel.type.includes('discogs'));
         //If discogs exists, use that as url. Otherwise, null
         const discogsURL = discogs ? discogs.url.resource : null;
+
+        console.log('Release group relations:', releaseGroupData.relations?.map(r => ({ type: r.type, url: r.url?.resource })));
 
         return { 
             discogs: discogsURL, 
@@ -82,7 +87,8 @@ async function getDigitalReleaseData(releases, visitedReleases){
             return { bandcamp: null, visitedMBID: nextRelease.id };
         }
 
-        const bandcamp = releaseData.relations.find(rel => rel.url.resource.includes('bandcamp'));
+
+        const bandcamp = releaseData.relations.find(rel => rel.url.resource.includes('bandcamp.com'));
         //If bancamp exists, use that as url. Otherwise, null
         const bandcampURL = bandcamp ? bandcamp.url.resource : null;
 
@@ -129,6 +135,8 @@ async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage)
         if (!artistHomepageHostname) {
             return { official: null, visitedMBID: nextRelease.id };
         }
+
+        
 
         const official = releaseData.relations.find(rel => 
             rel.type === 'purchase for mail-order' &&

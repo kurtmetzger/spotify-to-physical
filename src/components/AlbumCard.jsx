@@ -17,21 +17,21 @@ function AlbumCard({ album, index }){
             </div>
             <div className="purchaseButtons">
                 {
-                    album.links?.bandcamp && (
+                    album.links?.bandcamp && album.links?.bandcamp !== 'NONE' && (
                         <button type="button" onClick={() => window.open(album.links.bandcamp, '_blank', 'noreferrer')}>
                             Bandcamp
                         </button>
                     )
                 }
                 {
-                    album.links?.officialSite && (
+                    album.links?.official && album.links?.official !== 'NONE' &&(
                         <button type="button" onClick={() => window.open(album.links.official, '_blank', 'noreferrer')}>
                             Official Site
                         </button>
                     )
                 }
                 {
-                    album.links?.discogs && (
+                    album.links?.discogs && album.links?.discogs !== 'NONE' &&(
                         <button type="button" onClick={() => window.open(album.links.discogs, '_blank', 'noreferrer')}>
                             Discogs
                         </button>

@@ -27,7 +27,7 @@ function App() {
 
   useEffect(() => {
     if (!scoredAlbums) return;
-    console.log(scoredAlbums);
+    //console.log(scoredAlbums);
   }, [scoredAlbums]);
 
   useEffect(() => {
