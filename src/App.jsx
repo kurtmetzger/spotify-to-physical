@@ -42,22 +42,23 @@ function App() {
         if (result){
             //console.log('result.trackCount:', result.trackCount);
             //console.log('full result:', result);
-            topAlbum.totalTracks = result.trackCount
+            topAlbum.totalTracks = result.albumData.trackCount
             //console.log('topAlbum.totalTracks after assignment:', topAlbum.totalTracks);
             //console.log(result);
-            topAlbum.releaseType = result.releaseType;
-            topAlbum.links = result.links;
-            topAlbum.totalTracks = result.trackCount;
-            topAlbum.score = (topAlbum.engagedTracks / result.trackCount) * topAlbum.playAverage;
+            topAlbum.releaseType = result.albumData.releaseType;
+            topAlbum.links = result.albumData.links;
+            topAlbum.coverArt = result.albumData.coverArt;
+            topAlbum.totalTracks = result.albumData.trackCount;
+            topAlbum.score = (topAlbum.engagedTracks / result.albumData.trackCount) * topAlbum.playAverage;
         } else{
             console.log('No link found for: ', topAlbum.artist, topAlbum.albumName);
         }
         await sleep(2000);
       }
-      const albums = top20.filter(album => album.releaseType === 'Album');
-
+      const albums = top20
+        .filter(album => album.releaseType === 'Album')
+        .sort((a, b) => b.score - a.score);
       //Resort with track counts
-      top20.sort((a, b) => b.score - a.score);
       setEnrichedAlbums(albums);
       setIsLoading(false);
     }

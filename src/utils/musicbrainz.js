@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { getCachedAlbum, setCachedAlbum } from "./cache";
+import { getCachedAlbum, setCachedAlbum, setCachedArtist } from "./cache";
 
 export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -22,7 +22,8 @@ async function searchRelease(artist, album){
             releases: data.releases, 
             releaseGroupMBID: primaryRelease['release-group'].id, 
             trackCount: primaryRelease['track-count'], 
-            releaseType: primaryRelease['release-group']['primary-type'] 
+            releaseType: primaryRelease['release-group']['primary-type'],
+            artistMBID: primaryRelease['artist-credit'][0].artist.id
         };
     } catch (err){
         console.log('Error:', err);
@@ -136,7 +137,6 @@ async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage)
             return { official: null, visitedMBID: nextRelease.id };
         }
 
-        
 
         const official = releaseData.relations.find(rel => 
             rel.type === 'purchase for mail-order' &&
@@ -148,6 +148,25 @@ async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage)
     } catch (err) {
         console.log('Error: ', err);
     }      
+}
+async function getArtistData(artistMBID){
+    const artistPageURL = `https://musicbrainz.org/ws/2/artist/${artistMBID}?inc=url-rels&fmt=json`;
+
+    try{
+        const response = await fetch(artistPageURL);
+
+        const data = await response.json();
+
+        if (!data.relations) return { artistHomepage: null };
+
+        const officialSite = data.relations.find(rel => rel.type === 'official homepage');
+        const artistHomepage = officialSite ? officialSite.url.resource : null;
+        
+        return {artistHomepage};
+        
+    } catch (err){
+        console.log('Error:', err);
+    }
 }
 
 export async function getAlbumLinks(artist, album) {
@@ -169,43 +188,53 @@ export async function getAlbumLinks(artist, album) {
             const searchResult = await searchRelease(artist, album);
             if (!searchResult) return null;
             cached = {
-                trackCount: searchResult.trackCount,
-                releaseType: searchResult.releaseType,
-                releases: searchResult.releases,
-                releaseGroupMBID: searchResult.releaseGroupMBID,
-                coverArt: null,
-                artistHomepage: null,
-                visitedDigitalReleases: [],
-                visitedPhysicalReleases: [],
-                links: {bandcamp: null, official: null, discogs: null}
+                artistData: {
+                    artistMBID: searchResult.artistMBID,
+                    artistHomepage: null
+                },
+                albumData: {
+                    trackCount: searchResult.trackCount,
+                    releaseType: searchResult.releaseType,
+                    releases: searchResult.releases,
+                    releaseGroupMBID: searchResult.releaseGroupMBID,
+                    coverArt: null,
+                    visitedDigitalReleases: [],
+                    visitedPhysicalReleases: [],
+                    links: {bandcamp: null, official: null, discogs: null}
+                }
             };
         }
-        if (!allLinksResolved(cached.links)){
+        if (!allLinksResolved(cached.albumData.links)){
+
+            if (!cached?.artistData.artistHomepage) {
+                const artistData = await getArtistData(cached.artistData.artistMBID);
+                cached.artistData.artistHomepage = artistData.artistHomepage || 'NONE';
+                setCachedArtist(artist, {artistMBID: cached.artistData.artistMBID, artistHomepage: cached.artistData.artistHomepage})
+            }
             
-            if (!cached?.links.discogs){
-                const rgData = await getReleaseGroupData(cached.releaseGroupMBID);
-                cached.links.discogs = rgData.discogs;
-                cached.coverArt = rgData.coverArt;
-                cached.artistHomepage = rgData.artistHomepage;
+            if (!cached?.albumData?.links.discogs){
+                const rgData = await getReleaseGroupData(cached.albumData.releaseGroupMBID);
+                cached.albumData.links.discogs = rgData.discogs;
+                cached.albumData.coverArt = rgData.coverArt;
             }
 
-            if (!cached?.links.bandcamp){
-                const digitalData = await getDigitalReleaseData(cached.releases, cached.visitedDigitalReleases);
-                cached.links.bandcamp = digitalData.bandcamp;
+            if (!cached?.albumData?.links.bandcamp){
+                const digitalData = await getDigitalReleaseData(cached.albumData.releases, cached.albumData.visitedDigitalReleases);
+                cached.albumData.links.bandcamp = digitalData.bandcamp;
                 if (digitalData.visitedMBID){
-                    cached.visitedDigitalReleases.push(digitalData.visitedMBID);
+                    cached.albumData.visitedDigitalReleases.push(digitalData.visitedMBID);
                 }
             }
 
-            if (!cached?.links.official){
-                const physicalData = await getPhysicalReleaseData(cached.releases, cached.visitedPhysicalReleases, cached.artistHomepage);
-                cached.links.official = physicalData.official;
+            if (!cached?.albumData?.links.official){
+                const physicalData = await getPhysicalReleaseData(cached.albumData.releases, cached.albumData.visitedPhysicalReleases, cached.artistData.artistHomepage);
+                cached.albumData.links.official = physicalData.official;
                 if (physicalData.visitedMBID){
-                    cached.visitedPhysicalReleases.push(physicalData.visitedMBID);
+                    cached.albumData.visitedPhysicalReleases.push(physicalData.visitedMBID);
                 }
             }
 
-            setCachedAlbum(artist, album, cached);
+            setCachedAlbum(artist, album, cached.albumData);
         }
 
 
