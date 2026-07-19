@@ -99,6 +99,12 @@ async function getDigitalReleaseData(releases, visitedReleases){
     }    
 }
 async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage){
+
+    // TEMP: force specific release for testing finding official site
+    //lookupURL must be commented out later for this to work
+    //const testMBID = 'b4869afc-1b66-4a7b-b532-454cc4265157';
+    //const lookupURL = `https://musicbrainz.org/ws/2/release/${testMBID}?inc=url-rels&fmt=json`;
+
     const physicalReleases = releases.filter(release => 
         release.media?.[0]?.format === 'Vinyl' || 
         release.media?.[0]?.format === 'CD'
@@ -131,11 +137,20 @@ async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage)
             return { official: null, visitedMBID: nextRelease.id };
         }
 
-        const artistHomepageHostname = artistHomepage ? new URL(artistHomepage).hostname : null;
+        //Just grabs the main part of the url to see if the store page is under the larger umbrella. 
+        // This filters for links like "store.georgeharrison.com" that don't match exactly
+        const artistHomepageHostname = artistHomepage 
+            ? new URL(artistHomepage).hostname.replace('www.', '') 
+            : null;
 
         if (!artistHomepageHostname) {
             return { official: null, visitedMBID: nextRelease.id };
         }
+
+        console.log('Physical release relations for check:', 
+            releaseData.relations?.map(r => ({ type: r.type, url: r.url?.resource }))
+        );
+        console.log('Matching against hostname:', artistHomepageHostname);
 
 
         const official = releaseData.relations.find(rel => 
