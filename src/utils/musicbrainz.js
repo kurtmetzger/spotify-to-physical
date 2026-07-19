@@ -58,6 +58,7 @@ async function getReleaseGroupData(releaseGroupMBID){
 
     } catch (err){
         console.log('Error: ', err);
+        return null;
     }
 }
 async function getDigitalReleaseData(releases, visitedReleases){
@@ -96,6 +97,7 @@ async function getDigitalReleaseData(releases, visitedReleases){
         return {bandcamp: bandcampURL, visitedMBID: nextRelease.id};
     } catch (err) {
         console.log('Error: ', err);
+        return null;
     }    
 }
 async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage){
@@ -162,6 +164,7 @@ async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage)
         return {official: officialURL, visitedMBID: nextRelease.id};
     } catch (err) {
         console.log('Error: ', err);
+        return null;
     }      
 }
 async function getArtistData(artistMBID){
@@ -181,6 +184,7 @@ async function getArtistData(artistMBID){
         
     } catch (err){
         console.log('Error:', err);
+        return null;
     }
 }
 
@@ -223,30 +227,40 @@ export async function getAlbumLinks(artist, album) {
 
             if (!cached?.artistData.artistHomepage) {
                 const artistData = await getArtistData(cached.artistData.artistMBID);
-                cached.artistData.artistHomepage = artistData.artistHomepage || 'NONE';
+                if (artistData !== null){
+                     cached.artistData.artistHomepage = artistData.artistHomepage || 'NONE';
                 setCachedArtist(artist, {artistMBID: cached.artistData.artistMBID, artistHomepage: cached.artistData.artistHomepage})
+                }
             }
             
             if (!cached?.albumData?.links.discogs){
                 const rgData = await getReleaseGroupData(cached.albumData.releaseGroupMBID);
-                cached.albumData.links.discogs = rgData.discogs;
-                cached.albumData.coverArt = rgData.coverArt;
+                if (rgData !== null){
+                    cached.albumData.links.discogs = rgData.discogs;
+                    cached.albumData.coverArt = rgData.coverArt;
+                }
             }
 
             if (!cached?.albumData?.links.bandcamp){
                 const digitalData = await getDigitalReleaseData(cached.albumData.releases, cached.albumData.visitedDigitalReleases);
-                cached.albumData.links.bandcamp = digitalData.bandcamp;
-                if (digitalData.visitedMBID){
-                    cached.albumData.visitedDigitalReleases.push(digitalData.visitedMBID);
+                if (digitalData !== null){
+                    cached.albumData.links.bandcamp = digitalData.bandcamp;
+                    if (digitalData.visitedMBID){
+                        cached.albumData.visitedDigitalReleases.push(digitalData.visitedMBID);
+                    }
                 }
+               
             }
 
             if (!cached?.albumData?.links.official){
                 const physicalData = await getPhysicalReleaseData(cached.albumData.releases, cached.albumData.visitedPhysicalReleases, cached.artistData.artistHomepage);
-                cached.albumData.links.official = physicalData.official;
-                if (physicalData.visitedMBID){
-                    cached.albumData.visitedPhysicalReleases.push(physicalData.visitedMBID);
+                if (physicalData !== null){
+                    cached.albumData.links.official = physicalData.official;
+                    if (physicalData.visitedMBID){
+                        cached.albumData.visitedPhysicalReleases.push(physicalData.visitedMBID);
+                    }
                 }
+                
             }
 
             setCachedAlbum(artist, album, cached.albumData);
