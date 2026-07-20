@@ -53,7 +53,7 @@ function App() {
         } else{
             console.log('No link found for: ', topAlbum.artist, topAlbum.albumName);
         }
-        await sleep(2000);
+        await sleep(3000);
       }
       const albums = top20
         .filter(album => album.releaseType === 'Album')

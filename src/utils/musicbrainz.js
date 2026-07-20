@@ -17,10 +17,15 @@ async function searchRelease(artist, album){
 
         const officialReleases = data.releases.filter(r => r.status !== 'Bootleg');
         const primaryRelease = officialReleases[0] || data.releases[0];
+        const correctReleaseGroupMBID = primaryRelease['release-group'].id;
+
+        const filteredRelease = data.releases.filter(release =>
+            release['release-group']?.id === correctReleaseGroupMBID
+        );
 
         return { 
-            releases: data.releases, 
-            releaseGroupMBID: primaryRelease['release-group'].id, 
+            releases: filteredRelease, 
+            releaseGroupMBID: correctReleaseGroupMBID, 
             trackCount: primaryRelease['track-count'], 
             releaseType: primaryRelease['release-group']['primary-type'],
             artistMBID: primaryRelease['artist-credit'][0].artist.id
@@ -172,6 +177,11 @@ async function getArtistData(artistMBID){
 
     try{
         const response = await fetch(artistPageURL);
+
+        if (!response.ok){
+            console.log('Request dailed with status:', response.status);
+            return null;
+        }
 
         const data = await response.json();
 

@@ -5,7 +5,7 @@ function AlbumCard({ album, index }){
         <div className="albumCard">
             <div className='albumInfo'>
                 <h5>{index + 1}.</h5>
-                <img className='albumArt' src={album.coverArt || '/no_album_art.png'} alt={album.albumName} />
+                <img className='albumArt' src={album.coverArt || '/no_album_art.png'} onError={(e) => e.target.src = '/no_album_art.png'} alt={album.albumName} />
                 <div className='albumDetails'>
                     <div className='albumTitleWrapper'>
                         <h3 className='albumTitle'>{album.albumName}</h3>
