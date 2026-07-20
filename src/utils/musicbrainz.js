@@ -113,12 +113,12 @@ async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage)
     //const lookupURL = `https://musicbrainz.org/ws/2/release/${testMBID}?inc=url-rels&fmt=json`;
 
     const physicalReleases = releases.filter(release => 
-        release.media?.[0]?.format === 'Vinyl' || 
+        release.media?.[0]?.format === '12" Vinyl' || 
         release.media?.[0]?.format === 'CD'
     );
 
     const americanReleases = physicalReleases.filter(release => 
-        release.country === 'US'
+        release.country === 'US' || release.country === "XW"
     );
 
     //Returns most recent releases first
@@ -131,6 +131,13 @@ async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage)
     //Finds first item in physicalReleases not in visitedReleases
     const visitedSet = new Set(visitedReleases);
     const nextRelease = americanReleases.find(release=> !visitedSet.has(release.id));
+
+
+    console.log('American releases:', americanReleases.map(r => r.id));
+    console.log('Visited releases:', visitedReleases);
+    console.log('Visited set:', [...visitedSet]);
+    console.log('Next unvisited:', nextRelease?.id);
+
     if (!nextRelease){
         return {official: 'NONE', visitedMBID: null}
     }
