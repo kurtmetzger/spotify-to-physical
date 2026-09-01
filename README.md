@@ -1,16 +1,51 @@
-# React + Vite
+# Spotify to Physical
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**[Try it live →](https://spotify-to-physical.netlify.app/)**
 
-Currently, two official plugins are available:
+A tool for moving away from streaming on Spotify, but not knowing where to start. Upload your Spotify listening history adnd find links to purchase albums on Discogs, Bandcamp, or directly from the artist, all with your data staying 100% client side.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## How it works
 
-## React Compiler
+Spotify lets you export your full listening history as a JSON file. This tool reads that file, scores your albums based on how much of each one you've actually heard and how often, and surfaces the ones most worth buying.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The scoring rewards albums where you've heard an entire album often. An album you listen to all the tracks 3 or 4 times will likely score higher than an album where you've heard one track 50 times.
 
-## Expanding the ESLint configuration
+The app then searches [MusicBrainz](https://musicbrainz.org/) in order to find the relevant information, then saves results in your localStorage of your browser so it can easily find that data again without having to wait for MusicBrainz's request limit.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Your data never leaves your browser
+
+Everything is processed client-side. Your listening history is never uploaded to any server. Close the tab and it's gone.
+
+## How to export your Spotify data
+
+1. Go to [Spotify Privacy Settings](https://www.spotify.com/account/privacy/)
+2. Scroll to "Download your data"
+3. Select **Extended streaming history** only
+4. Confirm via the email Spotify sends you
+5. Wait 1–5 days for the download link
+6. Upload the JSON file to this tool
+
+## Buy links
+
+For each album the tool looks up:
+- **Bandcamp** — direct artist support
+- **Official store** — artist or label store from official website
+- **Discogs** — finding physical releases of everything else
+
+Links are sourced from [MusicBrainz](https://musicbrainz.org/), an open music encyclopedia. Coverage varies — if a link is missing for an artist you know has a Bandcamp, consider [adding it to MusicBrainz](https://musicbrainz.org/doc/How_to_Add_URLs) to improve the tool for everyone.
+
+## Built with
+
+- React + Vite
+- MusicBrainz API
+- Cover Art Archive
+- localStorage for progressive link caching
+
+## Run locally
+
+```bash
+git clone https://github.com/kurtmetzger/spotify-to-physical.git
+cd spotify-to-physical
+npm install
+npm run dev
+```
