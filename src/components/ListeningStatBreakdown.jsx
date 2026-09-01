@@ -12,8 +12,9 @@ function ListeningStatBreakdown({spotifyData}){
             <div className='listeningStatBreakdown'>
                 <p>Total plays: {filtered.length}</p>
                 <p>Artists have recieved a total of ${Number(filtered.length * 0.0004).toFixed(2)} from your listening this year. One new CD or record gets an artist around $2-10 depending on distribution.</p>
-                <p>To get the same ammount to artists you would have to buy {Math.round(Number(filtered.length * 0.0004).toFixed(2)/ 10)}-{Math.round(Number(filtered.length * 0.0004).toFixed(2) /2)} CDs or records this year.</p>
-                <p>A premium Individual plan of 12.99 a year could buy around 12 CDs a year instead, or roughly 5 vinyl albums.</p>
+                <p>To get the same ammount to artists you would have to buy {Math.round(Number(filtered.length * 0.0004).toFixed(2)/ 10)}-{Math.round(Number(filtered.length * 0.0004).toFixed(2) /2)} CDs or records this year.<br></br><br></br></p>
+                <p>A premium Individual plan of 12.99 a year could buy around 12 CDs a year instead, or roughly 5 vinyl albums. <br></br><br></br></p>
+                <p>Don't see an important album? Try <a href="">refreshing</a> and uploading the file to search again.</p>
             </div>
         </div>
         

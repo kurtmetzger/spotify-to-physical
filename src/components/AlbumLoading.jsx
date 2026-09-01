@@ -4,7 +4,7 @@ function AlbumLoading(){
     return(
         <div className='albumLoadingContainer'>
             <div className="loadingBox">
-                <p>Finding and scoring albums... this takes about 3 minutes</p>
+                <p>Finding and scoring albums... this takes about 2 minutes</p>
             </div>
         </div>
         
