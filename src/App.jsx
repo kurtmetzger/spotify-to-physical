@@ -1,6 +1,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import FileUpload from './components/FileUpload';
+import AlbumLoading from './components/AlbumLoading';
 import AlbumList from './components/AlbumList';
 import ListeningStatBreakdown from './components/ListeningStatBreakdown';
 import KofiWidget from './components/KofiWidget';
@@ -79,7 +80,7 @@ function App() {
             <AlbumList scoredAlbums={enrichedAlbums}/>
           </>
         ) : spotifyData && isLoading ? (
-          <p>Finding and scoring albums... this takes about 40 seconds</p>
+          <AlbumLoading />
         ) : (
           <FileUpload onDataLoaded={setSpotifyData} />
         )

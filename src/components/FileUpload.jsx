@@ -15,7 +15,10 @@ function FileUpload({ onDataLoaded }){
         <div className="fileUploadContainer">
             <div className="fileUpload">
                 {/* -- TODO: replace this directions link with a page of my own. */}
-                <p>To get your results, upload a JSON of your spotify listening history. Not sure how to get this? Follow the instructions <a href='https://explorify.link/instructions'>here</a></p>
+                <p>This is a tool that allows you to find what albums woud be the best value for you to purchase based on your Spotify listening history. 
+                    Great for people just getting into buying physical music and don't know where to start.<br></br><br></br>
+                </p>
+                <p>To get your results, upload a JSON of your Spotify listening history. Not sure how to get this? Follow the instructions <a href='https://explorify.link/instructions'>here</a></p>
                 <input type ="file" accept=".json" onChange={handleFileChange} />
             </div>
         </div>

@@ -1,0 +1,32 @@
+:root {
+  --color-background: #1A0033;
+  --color-primary: #008080;
+  --color-text: #FFFAEF;
+  --color-secondary: #FFBD52;
+  --color-accent: #DC1199;
+}
+
+.albumLoadingContainer{
+    display: flex;
+    justify-content: center;
+}
+
+.loadingBox{
+    display: flex;
+    background-color: var(--color-secondary);
+    justify-content: center;
+    margin: 8px;
+    padding: 8px;
+    width: 100%;
+    max-width: 600px;
+    flex-direction: column;
+}
+
+.loadingBox p, input{
+    width: 100%;
+    color: black;
+}
+
+.loadingBox *{
+    width: min-content;
+}
