@@ -7,6 +7,7 @@ async function searchRelease(artist, album){
     const url = `https://musicbrainz.org/ws/2/release/?query=artist:"${artist}" AND release:"${album}"&fmt=json`;
 
     try{
+        await sleep(4000);
         const response = await fetch(url);
 
         const data = await response.json();
@@ -39,6 +40,7 @@ async function getReleaseGroupData(releaseGroupMBID){
     const coverArt = `https://coverartarchive.org/release-group/${releaseGroupMBID}/front`;
     
     try{
+        await sleep(2000);
         const releaseGroupResponse = await fetch(releaseGroupEndpoint);
         const releaseGroupData = await releaseGroupResponse.json();
 
@@ -86,6 +88,7 @@ async function getDigitalReleaseData(releases, visitedReleases){
     }
 
     try{
+        await sleep(2000);
         const lookupURL = `https://musicbrainz.org/ws/2/release/${nextRelease.id}?inc=url-rels&fmt=json`;
         const response = await fetch(lookupURL);
         const releaseData = await response.json();
@@ -143,6 +146,7 @@ async function getPhysicalReleaseData(releases, visitedReleases, artistHomepage)
     }
 
     try{
+        await sleep(2000);
         const lookupURL = `https://musicbrainz.org/ws/2/release/${nextRelease.id}?inc=url-rels&fmt=json`;
         const response = await fetch(lookupURL);
         const releaseData = await response.json();
@@ -183,6 +187,7 @@ async function getArtistData(artistMBID){
     const artistPageURL = `https://musicbrainz.org/ws/2/artist/${artistMBID}?inc=url-rels&fmt=json`;
 
     try{
+        await sleep(2000);
         const response = await fetch(artistPageURL);
 
         if (!response.ok){

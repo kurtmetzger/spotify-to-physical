@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import FileUpload from './components/FileUpload';
 import AlbumList from './components/AlbumList';
 import ListeningStatBreakdown from './components/ListeningStatBreakdown';
+import KofiWidget from './components/KofiWidget';
 import { filterPlays, aggregateAlbums, scoreAlbums } from './utils/scoring';
 import {getAlbumLinks, sleep} from './utils/musicbrainz';
 
@@ -53,7 +54,6 @@ function App() {
         } else{
             console.log('No link found for: ', topAlbum.artist, topAlbum.albumName);
         }
-        await sleep(3000);
       }
       const albums = top20
         .filter(album => album.releaseType === 'Album')
@@ -84,6 +84,7 @@ function App() {
           <FileUpload onDataLoaded={setSpotifyData} />
         )
       }
+      <KofiWidget />
     </>
     )  
 }
